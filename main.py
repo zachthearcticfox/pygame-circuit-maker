@@ -108,6 +108,6 @@ while True:
     for i in blocks:
         pygame.draw.rect(screen, i.rect[1], i.rect[0])
         for j in i.inputs:
-            pygame.draw.line(screen, (255, 255, 255), (i.pos[0], i.pos[1]+12), (j.pos[0]+25, j.pos[1]+12))
+            pygame.draw.line(screen, (255, 255, 255), i.pos, (j.pos[0]+25, j.pos[1]))
     pygame.display.flip()
     clock.tick(60)
