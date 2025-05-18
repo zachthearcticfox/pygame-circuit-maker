@@ -19,19 +19,20 @@ class Block:
                 self.colour_on = (60, 60, 60)  # black
             case 'NODE':
                 self.colour_on = (255, 255, 255)  # white
-        self.colour_off = tuple(max(int(c * 0.6), 0) for c in self.colour_on)  # darkens colour_on by 20%
+        self.colour_off = tuple(max(int(c * 0.6), 0) for c in self.colour_on)  # darkens colour_on by 40%
         self.rect = (pygame.Rect(self.pos[0], self.pos[1], 25, 25), self.colour_off)  # creates rect to render
-        self.inputs = []
+        self.inputs = [] # blocks that are connected to this block
 
     def update_rect(self):
         self.rect = (pygame.Rect(self.pos[0], self.pos[1], 25, 25),
                      self.colour_on if self.state else self.colour_off)  # updates rendered rect to turn on and off
 
-blocks = []
-mode = 'build'
-block = 'NOT'
-tps = 20
+blocks = [] # where the blocks are stored
+mode = 'build' # mode (build, wire, etc.)
+block = 'NOT' # selected block
+tps = 20 # ticks / second
 
+# the blocks for the wiring system
 wre_1 = None
 wre_2 = None
 
@@ -44,15 +45,15 @@ def update_blockswires():  # updates the rect for all blocks
     for i in blocks:
         i.update_rect()
 
-pygame.init()
+pygame.init() # initialize pygame
 
-screen = pygame.display.set_mode((pygame.display.Info().current_w * 0.75, pygame.display.Info().current_h * 0.75))
-pygame.display.set_caption('Pygame Circuit Maker')
-clock = pygame.time.Clock()
+screen = pygame.display.set_mode((pygame.display.Info().current_w * 0.75, pygame.display.Info().current_h * 0.75)) # screen surface
+pygame.display.set_caption('Pygame Circuit Maker') # changes window name
+clock = pygame.time.Clock() # pygame clock
 
 def tick():
     global blocks, tps
-    time.sleep(1/tps)
+    time.sleep(1/tps) # tps delay
 
     for idx, blk in enumerate(blocks):
         inputs = [inp.state for inp in blk.inputs]
