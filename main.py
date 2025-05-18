@@ -1,47 +1,54 @@
-import pygame, pgu, sys
+import pygame, sys
 
 class Block:
     def __init__(self, type_, pos):
-        self.type = type_ # block type
-        self.pos = pos # block position
-        self.state = False # block state
-        self.next_state = False # next block state
+        self.type = type_  # block type
+        self.pos = pos  # block position
+        self.state = False  # block state
+        self.next_state = False  # next block state
         match self.type:
             case 'NOT':
-                self.colour_on = (255,0,0) # red
+                self.colour_on = (255, 0, 0)  # red
             case 'AND':
-                self.colour_on = (0,0,255) # blue
+                self.colour_on = (0, 0, 255)  # blue
             case 'XOR':
-                self.colour_on = (127,0,255) # purple
+                self.colour_on = (127, 0, 255)  # purple
             case 'OR':
-                self.colour_on = (0,255,0) # green
+                self.colour_on = (0, 255, 0)  # green
             case 'TFLIPFLOP':
-                self.colour_on = (45,45,45) # black
+                self.colour_on = (45, 45, 45)  # black
             case 'NODE':
-                self.colour_on = (255,255,255) # white
-        self.colour_off = tuple(max(int(c * 0.8), 0) for c in self.colour_on) # darkens colour_on by 20%
-        self.rect = (pygame.Rect(self.pos[0], self.pos[1], 25, 25), self.colour_off) # creates rect to render
-    
+                self.colour_on = (255, 255, 255)  # white
+        self.colour_off = tuple(max(int(c * 0.8), 0) for c in self.colour_on)  # darkens colour_on by 20%
+        self.rect = (pygame.Rect(self.pos[0], self.pos[1], 25, 25), self.colour_off)  # creates rect to render
+        self.inputs = []
+
     def update_rect(self):
-        self.rect = (pygame.Rect(self.pos[0], self.pos[1], 25, 25), self.colour_on if self.state else self.colour_off) # updates rendered rect to turn on and off depending on the state
+        self.rect = (pygame.Rect(self.pos[0], self.pos[1], 25, 25),
+                     self.colour_on if self.state else self.colour_off)  # updates rendered rect to turn on and off
 
 blocks = []
 mode = 'build'
 block = 'NOT'
+tps = 20
 
-def update_blocks(): # updates the rect for all blocks
+wre_1 = None
+wre_2 = None
+
+def update_blockswires():  # updates the rect for all blocks
     for i in blocks:
         i.update_rect()
 
 pygame.init()
 
-info = pygame.display.Info() # get display info
-screen_width = info.current_w
-screen_height = info.current_h
-
-screen = pygame.display.set_mode((screen_width * 0.75, screen_height * 0.75))
+screen = pygame.display.set_mode((pygame.display.Info().current_w * 0.75, pygame.display.Info().current_h * 0.75))
 pygame.display.set_caption('Pygame Circuit Maker')
 clock = pygame.time.Clock()
+
+def tick():
+    global blocks
+    for idx, blk in enumerate(blocks):
+        blk.state = blk.next_state
 
 while True:
     for event in pygame.event.get():
@@ -58,6 +65,21 @@ while True:
                     rect, color = i.rect
                     if rect.collidepoint(event.pos):
                         blocks.remove(i)
+            elif mode == 'wire':
+                if wre_1 is None:
+                    for i in blocks:
+                        if i.rect[0].collidepoint(event.pos):
+                            wre_1 = i
+                            break
+                elif wre_2 is None:
+                    for i in blocks:
+                        if i.rect[0].collidepoint(event.pos):
+                            wre_2 = i
+                            if wre_2 != wre_1:
+                                wre_2.inputs.append(wre_1)
+                            wre_1 = None
+                            wre_2 = None
+                            break
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_1:
                 block = 'NOT'
@@ -78,9 +100,14 @@ while True:
                 if event.key == pygame.K_2:
                     mode = 'delete'
                     print(mode)
+                if event.key == pygame.K_3:
+                    mode = 'wire'
+                    print(mode)
 
-    screen.fill((0,0,0))
+    screen.fill((0, 0, 0))
     for i in blocks:
         pygame.draw.rect(screen, i.rect[1], i.rect[0])
+        for j in i.inputs:
+            pygame.draw.line(screen, (255, 255, 255), (i.pos[0], i.pos[1]+12), (j.pos[0]+25, j.pos[1]+12))
     pygame.display.flip()
     clock.tick(60)
