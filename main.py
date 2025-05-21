@@ -86,7 +86,7 @@ def export_to_file(fp):
 
 pygame.init()
 screen = pygame.display.set_mode((pygame.display.Info().current_w * 0.75, pygame.display.Info().current_h * 0.75))
-pygame.display.set_caption('Pygame Circuit Maker')
+pygame.display.set_caption('Pygame Circuit Maker v0.3')
 clock = pygame.time.Clock()
 
 import_from_file('main.save')
