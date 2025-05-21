@@ -45,11 +45,56 @@ def update_blockswires():  # updates the rect for all blocks
     for i in blocks:
         i.update_rect()
 
+idxconv = [
+    'NOT',
+    'AND',
+    'XOR',
+    'OR',
+    'TFLIPFLOP',
+    'NODE'
+]
+
+def import_from_file(fp):
+    global blocks
+    blocks = []
+    with open(fp, 'r') as fr:
+        contents = fr.read().split('?')
+        if contents == ['', ''] or contents == ['']:
+            return
+    blocks_i = contents[0].split(';')
+    wires_i = contents[1].split('+')
+    for i in range(len(blocks_i)):
+        blocks_i[i] = tuple(map(int, blocks_i[i].split(',')))
+    for i in range(len(wires_i)):
+        wires_i[i] = tuple(map(int, wires_i[i].split(',')))
+    for idx, blk in enumerate(blocks_i):
+        blocks.append(Block(idxconv[blk[0]-1], (blk[2], blk[3])))
+    for i in wires_i:
+        blocks[i[1]].inputs.append(blocks[i[0]])
+    return blocks_i, wires_i
+
+def export_to_file(fp):
+    global blocks
+    output_blks = []
+    output_wres = []
+    for i in blocks:
+        output_blks.append(f'{idxconv.index(i.type)+1},{int(i.state)},{i.pos[0]},{i.pos[1]}')
+        for j in i.inputs:
+            output_wres.append(f'{blocks.index(j)},{blocks.index(i)}')
+    output_blks = ';'.join(output_blks)
+    output_wres = '+'.join(output_wres)
+    output = f'{output_blks}?{output_wres}'
+    with open(fp, 'w') as fw:
+        fw.write(output)
+    return output
+
 pygame.init() # initialize pygame
 
 screen = pygame.display.set_mode((pygame.display.Info().current_w * 0.75, pygame.display.Info().current_h * 0.75)) # screen surface
 pygame.display.set_caption('Pygame Circuit Maker') # changes window name
 clock = pygame.time.Clock() # pygame clock
+
+import_from_file('main.save')
 
 def tick():
     global blocks, tps
@@ -139,6 +184,8 @@ while True:
 
     screen.fill((0, 0, 0))
     tick()
+    #import_from_file('main.save')
+    export_to_file('main.save')
     for i in blocks:
         pygame.draw.rect(screen, i.rect[1], i.rect[0])
         i.update_rect()
