@@ -37,12 +37,15 @@ selecting = False
 select_start = None
 select_end = None
 selected_blocks = []
+right_dragging = False
+last_mouse_pos = (0, 0)
 
 print("""Controls:
 1 through 6: Change block
 Ctrl+1 through Ctrl+5: Change tool
 0: Print state and next state for all blocks
-Del: Delete selection""")
+Del: Delete selection
+Right Click + Drag: Move selection""")
 
 def update_blockswires():
     for i in blocks:
@@ -166,6 +169,22 @@ while True:
 
         elif event.type == pygame.MOUSEMOTION and selecting and mode == 'select':
             select_end = event.pos
+
+        elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 3:
+            right_dragging = True
+            last_mouse_pos = event.pos
+
+        elif event.type == pygame.MOUSEBUTTONUP and event.button == 3:
+            right_dragging = False
+
+        elif event.type == pygame.MOUSEMOTION and right_dragging:
+            current_mouse_pos = event.pos
+            dx = current_mouse_pos[0] - last_mouse_pos[0]
+            dy = current_mouse_pos[1] - last_mouse_pos[1]
+            for blk in selected_blocks:
+                blk.pos = (blk.pos[0] + dx, blk.pos[1] + dy)
+                blk.update_rect()
+            last_mouse_pos = current_mouse_pos
 
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_1:
