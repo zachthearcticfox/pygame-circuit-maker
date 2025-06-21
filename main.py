@@ -19,6 +19,8 @@ class Block:
                 self.colour_on = (60, 60, 60)
             case 'NODE':
                 self.colour_on = (255, 255, 255)
+            case 'SOUND':
+                self.colour_on = (234, 182, 118)
         self.colour_off = tuple(max(int(c * 0.6), 0) for c in self.colour_on)
         self.rect = (pygame.Rect(self.pos[0], self.pos[1], 25, 25), self.colour_off)
         self.inputs = []
@@ -51,7 +53,7 @@ def update_blockswires():
     for i in blocks:
         i.update_rect()
 
-idxconv = ['NOT', 'AND', 'XOR', 'OR', 'TFLIPFLOP', 'NODE']
+idxconv = ['NOT', 'AND', 'XOR', 'OR', 'TFLIPFLOP', 'NODE', 'SOUND']
 
 def import_from_file(fp):
     global blocks
@@ -88,9 +90,11 @@ def export_to_file(fp):
     return output
 
 pygame.init()
+pygame.mixer.init()
 screen = pygame.display.set_mode((pygame.display.Info().current_w * 0.75, pygame.display.Info().current_h * 0.75))
 pygame.display.set_caption('Pygame Circuit Maker v0.3')
 clock = pygame.time.Clock()
+pygame.mixer.music.load('soundblock.mp3')
 
 import_from_file('main.save')
 
@@ -110,6 +114,10 @@ def tick():
                 blk.next_state = sum(inputs) % 2 == 1 if inputs else False
             case 'NODE':
                 blk.next_state = inputs[0] if inputs else False
+            case 'SOUND':
+                blk.next_state = inputs[0] if inputs else False
+                if blk.state == True:
+                    pygame.mixer.music.play(1)
     for blk in blocks:
         blk.state = blk.next_state
 
@@ -199,6 +207,8 @@ while True:
                 block = 'TFLIPFLOP'
             if event.key == pygame.K_6:
                 block = 'NODE'
+            if event.key == pygame.K_7:
+                block = 'SOUND'
             if pygame.key.get_pressed()[pygame.K_LCTRL] or pygame.key.get_pressed()[pygame.K_RCTRL]:
                 if event.key == pygame.K_1:
                     mode = 'build'
